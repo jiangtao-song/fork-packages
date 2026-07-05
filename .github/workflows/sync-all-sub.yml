@@ -1,40 +1,63 @@
+# 工作流名称：定时同步所有子模块上游代码
 name: 定时同步所有子模块上游代码
-on:
-  schedule:
-    # UTC 凌晨2点执行，国内上午10点
-  - cron: '0 2 * * *'
-  workflow_dispatch: # 网页手动一键同步
 
+# 触发条件配置
+on:
+  # 定时任务：UTC时区 每日凌晨2点执行，对应国内上午10点自动同步
+  schedule:
+    - cron: '0 2 * * *'
+  # 支持网页手动点击运行工作流，不用等定时
+  workflow_dispatch:
+
+# 任务定义
 jobs:
   sync-submodules:
+    # 使用Ubuntu最新运行环境
     runs-on: ubuntu-latest
+    # 分步执行流程
     steps:
+      # 步骤1：拉取仓库完整代码 + 加载子模块索引
       - name: 完整拉取仓库与子模块索引
         uses: actions/checkout@v4
         with:
+          # 拉取完整git提交历史，避免浅克隆导致同步异常
           fetch-depth: 0
-          submodules: true  # 核心修复：自动加载仓库所有子模块，生成本地索引
+          # 自动读取仓库内所有子模块配置(.gitmodules)
+          submodules: true
 
+      # 步骤2：配置Git提交者身份，否则git commit会报错无用户
       - name: 配置提交用户
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      # 步骤3：同步子模块配置并强制下载全部子模块源码（解决cd找不到目录核心）
+      - name: 加载并下载全部子模块源码
+        run: |
+          # 将.gitmodules配置同步到本地git索引
+          git submodule sync
+          # --init 初始化缺失的子模块
+          # --force 强制拉取，修复索引与文件不匹配问题
+          git submodule update --init --force
+
+      # 步骤4：循环遍历每一个子模块，逐个拉取上游更新，单个失败不阻断整体
       - name: 循环逐个同步子模块，失败跳过
         run: |
-          # 先更新本地子模块索引，同步.gitmodules配置
-          git submodule sync
-          git submodule update --init
-
-          git submodule foreach '
-            echo "==================== 开始同步 $name ===================="
-            # 进入子模块目录拉取上游最新
-            cd "$path"
-            git fetch origin || echo "警告：$name 仓库拉取失败，跳过本次同步"
+          # git submodule foreach 自动遍历所有注册的子模块
+          git submodule foreach "
+            echo '==================== 开始同步 \$name ===================='
+            # 进入当前子模块目录
+            cd \$path
+            # 拉取子模块自身仓库最新代码，拉取失败输出警告，不终止脚本
+            git fetch origin || echo '警告：\$name 仓库拉取失败，跳过本次同步'
+            # 合并上游最新代码，合并冲突自动跳过不报错
             git merge origin/HEAD || true
+            # 返回仓库根目录，准备同步下一个子模块
             cd -
-          '
-          # 提交所有子模块变更
+          "
+          # 暂存所有子模块更新后的变更
           git add .
+          # 提交更新，无变更时静默跳过不报错
           git commit -m "自动同步子模块上游更新" || echo "所有子模块无更新，跳过提交"
+          # 将同步后的代码推送回自己的GitHub仓库
           git push origin main
