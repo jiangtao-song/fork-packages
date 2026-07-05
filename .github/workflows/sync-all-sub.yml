@@ -9,7 +9,7 @@ jobs:
   sync-submodules:
     runs-on: ubuntu-latest
     steps:
-      - name: 完整拉取仓库与子模块索引（新增submodules: true关键配置）
+      - name: 完整拉取仓库与子模块索引
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
