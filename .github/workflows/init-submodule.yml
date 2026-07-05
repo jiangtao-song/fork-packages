@@ -31,7 +31,7 @@ jobs:
             url=${sub_list[$path]}
             if [ ! -d "$path" ]; then
               echo "正在新增子模块 $path"
-              git submodule add -b main "$url" "$path"
+              git submodule add -b master "$url" "$path"
             else
               echo "子模块 $path 已存在，跳过创建"
             fi
