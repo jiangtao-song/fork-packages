@@ -14,3 +14,8 @@
 	path = packages/openwrt-node-red
 	url = https://github.com/jiangtao-song/openwrt-node-red.git
 	branch = main
+
+[submodule "packages/openwrt-node-packages"]
+	path = packages/openwrt-node-packages
+	url = https://github.com/jiangtao-song/openwrt-node-packages.git
+	branch = master
