@@ -1,0 +1,18 @@
+name: 初始化新增子模块
+on: workflow_dispatch
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 初始化并拉取所有子模块
+      - name: 拉取子模块代码
+        run: |
+          git submodule update --init --remote
+          git add .
+          git commit -m "网页新增子模块，同步指针" || echo "无变更"
+          git push origin main
