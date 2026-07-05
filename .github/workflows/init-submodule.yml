@@ -1,18 +1,24 @@
 name: 初始化新增子模块
-on: workflow_dispatch
+on:
+  workflow_dispatch: # 仅手动触发
 
 jobs:
   init:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: 检出仓库代码
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 初始化并拉取所有子模块
-      - name: 拉取子模块代码
+      - name: 配置Git提交身份
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 初始化并拉取全部子模块
         run: |
           git submodule update --init --remote
           git add .
-          git commit -m "网页新增子模块，同步指针" || echo "无变更"
+          git commit -m "网页初始化子模块 passwall2 + gecoosac" || echo "无变更无需提交"
           git push origin main
