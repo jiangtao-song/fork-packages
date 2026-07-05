@@ -42,5 +42,5 @@ jobs:
 
           # 提交变更并推送
           git add .
-          git commit -m "网页批量创建子模块 passwall2 + gecoosac + node-red" || echo "无变更无需提交"
+          git commit -m "网页批量创建子模块 passwall2 + gecoosac + node-red + node-packages" || echo "无变更无需提交"
           git push origin main
