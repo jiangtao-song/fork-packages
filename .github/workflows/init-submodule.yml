@@ -23,6 +23,8 @@ jobs:
           sub_list["packages/openwrt-passwall2"]="https://github.com/jiangtao-song/openwrt-passwall2.git"
           sub_list["packages/openwrt-gecoosac"]="https://github.com/jiangtao-song/openwrt-gecoosac.git"
           sub_list["packages/openwrt-node-red"]="https://github.com/jiangtao-song/openwrt-node-red.git"
+          sub_list["packages/openwrt-node-packages"]="https://github.com/jiangtao-song/openwrt-node-packages.git"
+
 
           # 循环遍历添加
           for path in "${!sub_list[@]}"; do
