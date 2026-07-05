@@ -1,12 +1,12 @@
 name: 初始化新增子模块
 on:
-  workflow_dispatch: # 仅手动触发
+  workflow_dispatch:
 
 jobs:
   init:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出仓库代码
+      - name: 检出仓库完整代码
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -16,9 +16,28 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: 初始化并拉取全部子模块
+      - name: 读取.gitmodules，批量创建子模块
         run: |
+          # 定义需要添加的子模块列表
+          declare -A sub_list
+          sub_list["packages/openwrt-passwall2"]="https://github.com/jiangtao-song/openwrt-passwall2.git"
+          sub_list["packages/openwrt-gecoosac"]="https://github.com/jiangtao-song/openwrt-gecoosac.git"
+
+          # 循环遍历添加
+          for path in "${!sub_list[@]}"; do
+            url=${sub_list[$path]}
+            if [ ! -d "$path" ]; then
+              echo "正在新增子模块 $path"
+              git submodule add -b main "$url" "$path"
+            else
+              echo "子模块 $path 已存在，跳过创建"
+            fi
+          done
+
+          # 拉取所有子模块最新代码
           git submodule update --init --remote
+
+          # 提交变更并推送
           git add .
-          git commit -m "网页初始化子模块 passwall2 + gecoosac" || echo "无变更无需提交"
+          git commit -m "网页批量创建子模块 passwall2 + gecoosac" || echo "无变更无需提交"
           git push origin main
