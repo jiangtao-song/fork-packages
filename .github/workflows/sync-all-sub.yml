@@ -3,17 +3,17 @@ on:
   schedule:
     # UTC 凌晨2点执行，国内上午10点
     - cron: '0 2 * * *'
-  workflow_dispatch: # 网页手动一键同步
+  workflow_dispatch # 网页手动一键同步
 
 jobs:
   sync-submodules:
     runs-on: ubuntu-latest
     steps:
-      - name: 完整拉取仓库与子模块
+      - name: 完整拉取仓库与子模块索引（新增submodules: true关键配置）
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: true
+          submodules: true  # 核心修复：自动加载仓库所有子模块，生成本地索引
 
       - name: 配置提交用户
         run: |
@@ -22,10 +22,14 @@ jobs:
 
       - name: 循环逐个同步子模块，失败跳过
         run: |
+          # 先更新本地子模块索引，同步.gitmodules配置
+          git submodule sync
+          git submodule update --init
+
           git submodule foreach '
             echo "==================== 开始同步 $name ===================="
             # 进入子模块目录拉取上游最新
-            cd $path
+            cd "$path"
             git fetch origin || echo "警告：$name 仓库拉取失败，跳过本次同步"
             git merge origin/HEAD || true
             cd -
