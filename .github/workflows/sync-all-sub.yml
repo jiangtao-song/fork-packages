@@ -1,59 +1,57 @@
-# 工作流名称：定时同步所有子模块上游代码
+# 工作流：定时同步所有子模块上游代码
 name: 定时同步所有子模块上游代码
 
-# 触发条件配置
+# 触发规则
 on:
-  # 定时任务：UTC时区 每日凌晨2点执行，对应国内上午10点自动同步
+  # UTC每日凌晨2点自动执行（国内10点）
   schedule:
     - cron: '0 2 * * *'
-  # 支持网页手动点击运行工作流，不用等定时
+  # 支持网页手动一键运行
   workflow_dispatch:
 
-# 任务定义
 jobs:
   sync-submodules:
-    # 使用Ubuntu最新运行环境
     runs-on: ubuntu-latest
-    # 分步执行流程
     steps:
-      # 步骤1：拉取仓库完整代码 + 加载子模块索引
+      # 1. 拉取完整仓库+子模块索引配置
       - name: 完整拉取仓库与子模块索引
         uses: actions/checkout@v4
         with:
-          # 拉取完整git提交历史，避免浅克隆导致同步异常
           fetch-depth: 0
-          # 自动读取仓库内所有子模块配置(.gitmodules)
           submodules: true
 
-      # 步骤2：配置Git提交者身份，否则git commit会报错无用户
+      # 2. 配置Git提交身份，避免commit报错
       - name: 配置提交用户
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # 步骤3：同步子模块配置并强制下载全部子模块源码
+      # 3. 同步配置并完整下载子模块源码
       - name: 加载并下载全部子模块源码
         run: |
-          # 将.gitmodules配置同步到本地git索引
           git submodule sync
-          # --init 初始化缺失的子模块
-          # --force 强制拉取，修复索引与文件不匹配问题
           git submodule update --init --force
 
-      # 步骤4：【修复核心】使用单引号包裹foreach脚本，避免变量提前解析
-      - name: 循环逐个同步子模块，失败跳过
+      # 4. 替代foreach方案：读取子模块路径数组，用绝对路径同步，彻底解决cd找不到目录
+      - name: 逐个同步子模块（替代foreach，规避路径上下文bug）
         run: |
-          # 使用单引号包裹，$name $path 交由git子模块环境变量解析，不会提前失效
-          git submodule foreach '
-            echo "==================== 开始同步 $name ===================="
-            cd "$path"
-            git fetch origin || echo "警告：$name 仓库拉取失败，跳过本次同步"
+          # 读取所有子模块路径存入数组
+          SUB_PATHS=$(git submodule status | awk '{print $2}')
+          # 循环遍历每一个子模块
+          for sub_path in $SUB_PATHS; do
+            echo "==================== 开始同步 $sub_path ===================="
+            # 使用仓库根目录绝对路径进入子模块，规避上下文缺失
+            full_path="$GITHUB_WORKSPACE/$sub_path"
+            echo "完整目录路径: $full_path"
+            # 进入绝对路径目录同步上游
+            cd "$full_path"
+            git fetch origin || echo "警告：$sub_path 仓库拉取失败，跳过本次同步"
             git merge origin/HEAD || true
-            cd -
-          '
-          # 暂存所有子模块更新后的变更
+            # 返回仓库根目录
+            cd "$GITHUB_WORKSPACE"
+          done
+
+          # 提交所有同步变更
           git add .
-          # 提交更新，无变更时静默跳过不报错
           git commit -m "自动同步子模块上游更新" || echo "所有子模块无更新，跳过提交"
-          # 将同步后的代码推送回自己的GitHub仓库
           git push origin main
