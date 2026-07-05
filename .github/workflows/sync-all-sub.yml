@@ -31,7 +31,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # 步骤3：同步子模块配置并强制下载全部子模块源码（解决cd找不到目录核心）
+      # 步骤3：同步子模块配置并强制下载全部子模块源码
       - name: 加载并下载全部子模块源码
         run: |
           # 将.gitmodules配置同步到本地git索引
@@ -40,21 +40,17 @@ jobs:
           # --force 强制拉取，修复索引与文件不匹配问题
           git submodule update --init --force
 
-      # 步骤4：循环遍历每一个子模块，逐个拉取上游更新，单个失败不阻断整体
+      # 步骤4：【修复核心】使用单引号包裹foreach脚本，避免变量提前解析
       - name: 循环逐个同步子模块，失败跳过
         run: |
-          # git submodule foreach 自动遍历所有注册的子模块
-          git submodule foreach "
-            echo '==================== 开始同步 \$name ===================='
-            # 进入当前子模块目录
-            cd \$path
-            # 拉取子模块自身仓库最新代码，拉取失败输出警告，不终止脚本
-            git fetch origin || echo '警告：\$name 仓库拉取失败，跳过本次同步'
-            # 合并上游最新代码，合并冲突自动跳过不报错
+          # 使用单引号包裹，$name $path 交由git子模块环境变量解析，不会提前失效
+          git submodule foreach '
+            echo "==================== 开始同步 $name ===================="
+            cd "$path"
+            git fetch origin || echo "警告：$name 仓库拉取失败，跳过本次同步"
             git merge origin/HEAD || true
-            # 返回仓库根目录，准备同步下一个子模块
             cd -
-          "
+          '
           # 暂存所有子模块更新后的变更
           git add .
           # 提交更新，无变更时静默跳过不报错
