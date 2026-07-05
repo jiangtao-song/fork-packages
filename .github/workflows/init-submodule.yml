@@ -22,6 +22,7 @@ jobs:
           declare -A sub_list
           sub_list["packages/openwrt-passwall2"]="https://github.com/jiangtao-song/openwrt-passwall2.git"
           sub_list["packages/openwrt-gecoosac"]="https://github.com/jiangtao-song/openwrt-gecoosac.git"
+          sub_list["packages/openwrt-node-red"]="https://github.com/jiangtao-song/openwrt-node-red.git"
 
           # 循环遍历添加
           for path in "${!sub_list[@]}"; do
@@ -39,5 +40,5 @@ jobs:
 
           # 提交变更并推送
           git add .
-          git commit -m "网页批量创建子模块 passwall2 + gecoosac" || echo "无变更无需提交"
+          git commit -m "网页批量创建子模块 passwall2 + gecoosac + node-red" || echo "无变更无需提交"
           git push origin main
