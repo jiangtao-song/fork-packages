@@ -1,0 +1,42 @@
+# Auto generated file, DO NOT EDIT MANUALLY
+# Branch auto fetch by GitHub API, submodule store at fork-packages root dir
+[submodule "openwrt-passwall2"]
+	path = openwrt-passwall2
+	url = https://github.com/jiangtao-song/openwrt-passwall2.git
+	branch = main
+
+[submodule "openwrt-gecoosac"]
+	path = openwrt-gecoosac
+	url = https://github.com/jiangtao-song/openwrt-gecoosac.git
+	branch = main
+
+[submodule "openwrt-node-packages"]
+	path = openwrt-node-packages
+	url = https://github.com/jiangtao-song/openwrt-node-packages.git
+	branch = master
+
+[submodule "openwrt-luci-app-mosdns"]
+	path = openwrt-luci-app-mosdns
+	url = https://github.com/jiangtao-song/openwrt-luci-app-mosdns.git
+	branch = v5
+
+[submodule "openwrt-luci-app-lucky"]
+	path = openwrt-luci-app-lucky
+	url = https://github.com/jiangtao-song/openwrt-luci-app-lucky.git
+	branch = main
+
+[submodule "openwrt-luci-app-unblockneteasemusic"]
+	path = openwrt-luci-app-unblockneteasemusic
+	url = https://github.com/jiangtao-song/openwrt-luci-app-unblockneteasemusic.git
+	branch = js
+
+[submodule "openwrt-v2ray-geodata"]
+	path = openwrt-v2ray-geodata
+	url = https://github.com/jiangtao-song/openwrt-v2ray-geodata.git
+	branch = master
+
+[submodule "openwrt-luci-app-adguardhome"]
+	path = openwrt-luci-app-adguardhome
+	url = https://github.com/jiangtao-song/openwrt-luci-app-adguardhome.git
+	branch = master
+
