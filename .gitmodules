@@ -16,7 +16,7 @@
 [submodule "packages/openwrt-luci-app-mosdns"]
 	path = packages/openwrt-luci-app-mosdns
 	url = https://github.com/jiangtao-song/openwrt-luci-app-mosdns.git
-	branch = main
+	branch = v5
 
 [submodule "packages/openwrt-luci-app-lucky"]
 	path = packages/openwrt-luci-app-lucky
@@ -26,12 +26,12 @@
 [submodule "packages/openwrt-luci-app-unblockneteasemusic"]
 	path = packages/openwrt-luci-app-unblockneteasemusic
 	url = https://github.com/jiangtao-song/openwrt-luci-app-unblockneteasemusic.git
-	branch = main
+	branch = master
 
 [submodule "packages/openwrt-v2ray-geodata"]
 	path = packages/openwrt-v2ray-geodata
 	url = https://github.com/jiangtao-song/openwrt-v2ray-geodata.git
-	branch = main
+	branch = master
 
 [submodule "packages/openwrt-luci-app-adguardhome"]
 	path = packages/openwrt-luci-app-adguardhome
