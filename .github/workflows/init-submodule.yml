@@ -1,46 +1,46 @@
+# fork-packages/.github/workflows/初始化新增子模块.yml
+# 完整带注释
 name: 初始化新增子模块
+# 允许外部仓库API远程调用，缺少这个会完全不运行
 on:
-  workflow_dispatch:
+  repository_dispatch:
 
 jobs:
-  init:
+  update_submodules:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出仓库完整代码
+      # 检出完整代码，拉取全部历史
+      - name: 检出fork-packages源码
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # 关键：拉取子模块需要开启
+          submodules: false
 
-      - name: 配置Git提交身份
+      # 配置提交机器人
+      - name: 配置Git用户
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "BuildControllerBot"
+          git config --global user.email "build-bot@github.com"
 
-      - name: 读取.gitmodules，批量创建子模块
+      # 自动创建packages父目录（缺失这个就不会生成子模块文件夹）
+      - name: 预先创建packages存放目录
+        run: mkdir -p packages
+
+      # 同步子模块配置、初始化所有子模块、拉取对应分支最新代码
+      - name: 更新全部子模块
         run: |
-          # 定义需要添加的子模块列表
-          declare -A sub_list
-          sub_list["packages/openwrt-passwall2"]="https://github.com/jiangtao-song/openwrt-passwall2.git"
-          sub_list["packages/openwrt-gecoosac"]="https://github.com/jiangtao-song/openwrt-gecoosac.git"
-          sub_list["packages/openwrt-node-red"]="https://github.com/jiangtao-song/openwrt-node-red.git"
-          sub_list["packages/openwrt-node-packages"]="https://github.com/jiangtao-song/openwrt-node-packages.git"
+          git submodule sync --recursive
+          # --init：不存在则新建文件夹克隆；--remote：拉取对应分支最新
+          git submodule update --init --recursive --remote
 
-
-          # 循环遍历添加
-          for path in "${!sub_list[@]}"; do
-            url=${sub_list[$path]}
-            if [ ! -d "$path" ]; then
-              echo "正在新增子模块 $path"
-              git submodule add -b master "$url" "$path"
-            else
-              echo "子模块 $path 已存在，跳过创建"
-            fi
-          done
-
-          # 拉取所有子模块最新代码
-          git submodule update --init --remote
-
-          # 提交变更并推送
-          git add .
-          git commit -m "网页批量创建子模块 passwall2 + gecoosac + node-red + node-packages" || echo "无变更无需提交"
-          git push origin main
+      # 检测子模块指针变更并提交推送
+      - name: 提交子模块指针更新
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            git add .
+            git commit -m "Auto update all submodule pointers"
+            git push origin main
+          else
+            echo "子模块指针无更新，无需提交"
+          fi
