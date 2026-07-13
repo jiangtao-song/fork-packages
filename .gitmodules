@@ -40,3 +40,7 @@
 	url = https://github.com/jiangtao-song/openwrt-luci-app-adguardhome.git
 	branch = master
 
+[submodule "luci-app-node-red"]
+	path = openwrt-luci-app-adguardhome
+	url = https://github.com/jiangtao-song/luci-app-node-red.git
+	branch = main
